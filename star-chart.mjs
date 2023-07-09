@@ -313,6 +313,6 @@ function onScroll(event) {
     }
 }
 
-document.addEventListener('wheel', onScroll, false);
+//document.addEventListener('wheel', onScroll, false);
 
-animate();
+//animate();
