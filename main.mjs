@@ -21,6 +21,9 @@ const maxJets = 1000;
 const jumpJets = 200;
 let jets = 1000;
 
+const maxMagic = 10000;
+let magic = 5000;
+
 let worldMap = [
 	[99]
 ];
@@ -306,7 +309,22 @@ function gravity(camera) {
 			camera.position.y += 0.02;
 		}
 		else if( distance > 0.2 ) {
-			camera.position.y -= 0.005;
+			if( magic <= 0 ) {
+				camera.position.y -= 0.005;
+			}
+			else {
+				magic -= 2;
+				updateJetsBar();
+			}
+		}
+		else {
+			if( magic < maxMagic ) {
+				magic += 20;
+				if( magic > maxMagic ) {
+					magic = maxMagic;
+				}
+				updateJetsBar();
+			}
 		}
 	}
 }
@@ -364,6 +382,7 @@ function collectArtifact() {
 }
 
 function animate() {
+	gravity( camera );
 	updateCameraPosition( movementSpeed );
 	requestAnimationFrame( animate );
 	//composer.render();
@@ -515,7 +534,7 @@ function generateArtifacts( scene, artifactModels ) {
 	for( let i = 0; i < 10; i++ ) {
 		const artifactModel = artifactModels[Math.floor(Math.random() * artifactModels.length)];
 		let object = artifactModel.object.clone();
-		object.position.set( Math.random() * worldSize - 5, Math.random() * 5 + 2, Math.random() * worldSize - 5 );
+		object.position.set( Math.random() * worldSize - 5, Math.random() * 4 + 2, Math.random() * worldSize - 5 );
 		object.scale.set( 0.05, 0.05, 0.05 );
 		artifactObjects.push( object );
 		artifactData.push( { nearby: false } );
@@ -562,7 +581,7 @@ function updateStatus(numArtifacts) {
 }
 
 function updateJetsBar() {
-	const percent = Math.floor((jets / maxJets) * 100);
+	const percent = Math.floor((magic / maxMagic) * 100);
 	const progressBar = document.querySelector('.progress-jets');
 	progressBar.style.width = percent + '%';
 }
