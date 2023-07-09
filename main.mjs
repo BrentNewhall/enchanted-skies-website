@@ -62,7 +62,7 @@ function getStarDataWeb() {
 			"map": [[101]],
 			"tiles": [102, 103, 6, 101],
 			"sky": "sky6.jpg",
-			"collectibles": ["artifact4","artifact5", "artifact6"]
+			"collectibles": ["crystal1", "crystal2", "crystal3"]
 		}
 		if( "map" in data ) {
 			worldMap = data["map"];
@@ -129,6 +129,8 @@ const keys = {
 	KeyA: false,
 	KeyD: false,
 	KeyC: false,
+	KeyR: false,
+	KeyF: false,
 	ShiftLeft: false,
 	ArrowLeft: false,
 	ArrowRight: false,
@@ -264,6 +266,12 @@ function updateCameraPosition( movementSpeed ) {
 			camera.position.add(direction.multiplyScalar( speed ));
 		}
 	}
+	if( keys.KeyR ) {
+		camera.position.y += speed;
+	}
+	if( keys.KeyF ) {
+		camera.position.y -= speed;
+	}
 	if( keys.KeyA  ||  keys.ArrowLeft ) {
 		camera.rotation.y += speed * 2;
 	}
@@ -356,7 +364,6 @@ function collectArtifact() {
 }
 
 function animate() {
-	gravity(camera);
 	updateCameraPosition( movementSpeed );
 	requestAnimationFrame( animate );
 	//composer.render();
@@ -508,12 +515,11 @@ function generateArtifacts( scene, artifactModels ) {
 	for( let i = 0; i < 10; i++ ) {
 		const artifactModel = artifactModels[Math.floor(Math.random() * artifactModels.length)];
 		let object = artifactModel.object.clone();
-		object.position.set( Math.random() * worldSize - 5, 20, Math.random() * worldSize - 5 );
+		object.position.set( Math.random() * worldSize - 5, Math.random() * 5 + 2, Math.random() * worldSize - 5 );
 		object.scale.set( 0.05, 0.05, 0.05 );
 		artifactObjects.push( object );
 		artifactData.push( { nearby: false } );
 		scene.add( object );
-		dropObject( object );	
 	}
 }
 
