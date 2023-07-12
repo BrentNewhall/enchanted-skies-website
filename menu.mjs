@@ -5,10 +5,10 @@ function createMenu() {
     menu.classList.add('centered-panel');
     menu.innerHTML = `
         <div class="tabs">
-            <div class="tab active" onclick="openTab(event, 'tab1')">Stats</div>
-            <div class="tab" onclick="openTab(event, 'tab2')">Controls</div>
+            <div class="tab active" id="tab1">Stats</div>
+            <div class="tab" id="tab2">Controls</div>
         </div>
-        <div id="tab1" class="tab-content active">
+        <div id="tab1-content" class="tab-content active">
             <table><tbody>
             <tr><td class="collection">Stars discovered:</td><td id="stars-discovered">11</td></tr>
             <tr><td colspan="2"><h2>Collections</h2></td></tr>
@@ -18,7 +18,7 @@ function createMenu() {
             <tr><td class="collection">Machines:</td><td id="collected-machines">0</td></tr>
             </tbody></table>
         </div>
-        <div id="tab2" class="tab-content">
+        <div id="tab2-content" class="tab-content">
             <div class="key"><key>&#8593;</key>/<key>W</key> Move forwards</div>
             <div class="key"><key>&#8595;</key>/<key>A</key> Move backwards</div>
             <div class="key"><key>&#8592;</key>/<key>S</key> Turn left</div>
@@ -49,6 +49,7 @@ function createMenu() {
 }
 
 function openTab(evt, tabName) {
+    tabName += "-content";
     if( tabName === "" )  return;
     // Hide all tab content sections
     var tabContent = document.getElementsByClassName("tab-content");
