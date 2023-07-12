@@ -23,10 +23,12 @@ function createMenu() {
             <div class="key"><key>&#8595;</key>/<key>A</key> Move backwards</div>
             <div class="key"><key>&#8592;</key>/<key>S</key> Turn left</div>
             <div class="key"><key>&#8594;</key>/<key>D</key> Turn right</div>
+            <div class="key"><key>R</key> Fly upwards</div>
+            <div class="key"><key>F</key> Fly downwards</div>
             <div class="key"><key>Shift</key> Accelerate</div>
             <div class="key"><key>Space</key> Jump</div>
             <div class="key"><key>C</key> Collect artifact</div>
-            <div class="key"><key>Esc</key> Return to star chart</div>
+            <div class="key"><key>Esc</key> Return to map</div>
             Click on world to toggle mouse look
         </div>`;
     document.body.appendChild(menu);
