@@ -317,7 +317,7 @@ function gravity(camera) {
 		}
 		else {
 			if( magic < maxMagic ) {
-				magic += 20;
+				magic += 10;
 				if( magic > maxMagic ) {
 					magic = maxMagic;
 				}
