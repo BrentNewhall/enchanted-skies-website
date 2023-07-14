@@ -40,6 +40,7 @@ if( getURLParameter("id") !== null ) {
 
 let tiles = [];
 let collectibles = [];
+let monsters = [];
 
 let mouseControls = false;
 const sensitivity = 0.002;
@@ -65,6 +66,7 @@ function getStarDataWeb() {
 			"map": [[101]],
 			"tiles": [102, 103, 6, 101],
 			"sky": "sky6.jpg",
+			"monsters": ["monster1"],
 			"collectibles": ["crystal1", "crystal2", "crystal3"]
 		}
 		if( "map" in data ) {
@@ -79,6 +81,9 @@ function getStarDataWeb() {
 		}
 		if( "collectibles" in data ) {
 			collectibles = data["collectibles"].map(name => name += ".gltf");
+		}
+		if( "monsters" in data ) {
+			monsters = data["monsters"].map(name => name += ".gltf");
 		}
 		if( "features" in data ) {
 			for( let feature of data["features"] ) {
@@ -125,6 +130,8 @@ camera.rotation.order = "YXZ";
 
 let artifactObjects = [];
 let artifactData = [];
+
+let monsterObjects = [];
 
 const keys = {
 	KeyW: false,
@@ -224,8 +231,8 @@ function setup() {
 
 function distanceAbove(camera, scene) {
 	const raycaster = new THREE.Raycaster();
-	raycaster.setFromCamera( new THREE.Vector2(0,1), camera );
-	const direction = new THREE.Vector3(0, 1, 0);
+	const direction = new THREE.Vector3(0, -1000, 0);
+	raycaster.set(camera.position, direction);
 	const intersects = raycaster.intersectObjects( scene.children );
 	if( intersects.length > 0 ) {
 		return intersects[0].distance;
@@ -334,7 +341,7 @@ function dropObject(object) {
 	const intersects = raycaster.intersectObjects( scene.children );
 	if( intersects.length > 0 ) {
 		const distance = intersects[0].distance;
-		if( distance > 0.1 ) {
+		if( distance > 0.01 ) {
 			object.position.y -= distance;
 			// Rotate the object to face the ground
 			/* const faceNormal = intersects[0].face.normal;
@@ -379,9 +386,30 @@ function collectArtifact() {
 	}
 }
 
+function updateMonsters( monsterObjects, camera, scene ) {
+	console.log(distanceAbove( camera, scene ))
+	if( distanceAbove( camera, scene ) < 1 ) {
+		for( let monsterObject of monsterObjects ) {
+			monsterObject.lookAt( camera.position );
+			monsterObject.position.add( monsterObject.getWorldDirection(new THREE.Vector3()).multiplyScalar( 0.01 ) );
+			dropObject( monsterObject );
+			// Check for collision with player
+			const distance = monsterObject.position.distanceTo(camera.position);
+			if( distance < 0.4 ) {
+				magic -= 10;
+				if( magic < 0 ) {
+					magic = 0;
+				}
+			}
+		}
+	}	
+}
+
+
 function animate() {
 	gravity( camera );
 	updateCameraPosition( movementSpeed );
+	updateMonsters( monsterObjects, camera, scene );
 	requestAnimationFrame( animate );
 	//composer.render();
 	findNearbyArtifacts( artifactObjects, artifactData );
@@ -463,6 +491,7 @@ function loadTiles(modelPaths, worldMap, scene) {
 	.then(() => {
 		addMapsToScene( tileModels, worldMap, scene );
 		loadArtifacts( collectibles );
+		loadMonsters( monsters );
 	})
 	.catch((error) => {
 		// Error occurred during loading
@@ -536,6 +565,49 @@ function generateArtifacts( scene, artifactModels ) {
 		object.scale.set( 0.05, 0.05, 0.05 );
 		artifactObjects.push( object );
 		artifactData.push( { nearby: false } );
+		scene.add( object );
+	}
+}
+
+function loadMonsters(monsterPaths) {
+	let monsterModels = [];
+	const loadPromises = monsterPaths.map( (monsterPath) => {
+		return new Promise( (resolve, reject) => {
+			const loader = new GLTFLoader();
+			loader.load( monsterPath, (gltf) => {
+				let modelId = monsterPath.split('.')[0];
+				modelId = Number(modelId.replace('artifact', ''));
+				monsterModels.push( {
+					id: modelId,
+					object: gltf.scene
+				})
+				resolve(); // Resolve the promise once the model is loaded
+			}, undefined, reject);
+		});
+	});
+
+	// Wait for all promises to resolve
+	Promise.all( loadPromises )
+	.then(() => {
+		generateMonsters( scene, monsterModels );
+		updateStatus(numArtifacts);
+		updateLoadingBar();
+	})
+	.catch((error) => {
+		// Error occurred during loading
+		console.error( 'Error loading monster models:', error );
+	});
+}
+
+function generateMonsters( scene, monsterModels ) {
+	let worldSize = worldMap.length * 10;
+	for( let i = 0; i < 3; i++ ) {
+		const monsterModel = monsterModels[Math.floor(Math.random() * monsterModels.length)];
+		let object = monsterModel.object.clone();
+		object.position.set( Math.random() * worldSize - 5, 4, Math.random() * worldSize - 5 );
+		object.scale.set( 0.05, 0.05, 0.05 );
+		dropObject( object );
+		monsterObjects.push( object );
 		scene.add( object );
 	}
 }
