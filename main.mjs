@@ -400,6 +400,7 @@ function updateMonsters( monsterObjects, camera, scene ) {
 				if( magic < 0 ) {
 					magic = 0;
 				}
+				updateJetsBar();
 			}
 		}
 	}	
