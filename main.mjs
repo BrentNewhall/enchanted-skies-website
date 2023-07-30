@@ -8,7 +8,9 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 const maxTime = 10 * 60;
 let oxygen = maxTime;
 
-let movementSpeed = 0.01;
+let speed = 0;
+let movementSpeed = 0.002;
+let maxMovementSpeed = 0.05;
 
 const numArtifacts = 10;
 let artifactsCollected = 0;
@@ -240,38 +242,32 @@ function distanceAbove(camera, scene) {
 	return 1000000;
 }
 
+function moveForward( camera, scene ) {
+	if( oxygen <= 0 )  return;
+	// Get the direction vector of the camera
+	const direction = camera.getWorldDirection(new THREE.Vector3());
+	// Check for any objects in front of the camera
+	const raycaster = new THREE.Raycaster();
+	raycaster.set(camera.position, direction);
+	const intersects = raycaster.intersectObjects( scene.children );
+	if( intersects.length === 0  ||  intersects[0].distance > 0.3 ) {
+		// Scale the direction vector by the movement speed and add it to the camera's position
+		camera.position.add( direction.multiplyScalar( speed ) );
+	}
+}
+
 function updateCameraPosition( movementSpeed ) {
 	if( oxygen <= 0 )  return;
-	let speed = movementSpeed;
-	if( keys.ShiftLeft ) {
-		if( jets + 1 > 0 ) {
-			speed = speed * 2.5;
-			jets -= 1;
-			updateJetsBar();
-		}
-	}
 	if( keys.KeyW  ||  keys.ArrowUp ) {
-		// Get the direction vector of the camera
-		const direction = camera.getWorldDirection(new THREE.Vector3());
-		// Check for any objects in front of the camera
-		const raycaster = new THREE.Raycaster();
-		raycaster.set(camera.position, direction);
-		const intersects = raycaster.intersectObjects( scene.children );
-		if( intersects.length === 0  ||  intersects[0].distance > 0.3 ) {
-			// Scale the direction vector by the movement speed and add it to the camera's position
-			camera.position.add( direction.multiplyScalar( speed ) );
+		speed += movementSpeed;
+		if( speed > maxMovementSpeed ) {
+			speed = maxMovementSpeed;
 		}
 	}
 	if( keys.KeyS  ||  keys.ArrowDown ) {
-		// Get the direction vector of the camera
-		const direction = camera.getWorldDirection(new THREE.Vector3()).negate();
-		// Check for any objects in front of the camera
-		const raycaster = new THREE.Raycaster();
-		raycaster.set( camera.position, direction );
-		const intersects = raycaster.intersectObjects( scene.children );
-		if( intersects.length === 0  ||  intersects[0].distance > 0.3 ) {
-			// Scale the direction vector by the movement speed and add it to the camera's position
-			camera.position.add(direction.multiplyScalar( speed ));
+		speed -= movementSpeed;
+		if( speed < 0 ) {
+			speed = 0;
 		}
 	}
 	if( keys.KeyR ) {
@@ -300,6 +296,9 @@ function updateCameraPosition( movementSpeed ) {
 				jumping = 0;
 			}
 		}
+	}
+	if( speed > 0 ) {
+		moveForward( camera, scene );
 	}
 }
 
